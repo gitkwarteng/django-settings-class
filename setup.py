@@ -1,7 +1,7 @@
 from setuptools import setup, find_packages
 
 setup(
-    name='django-settings-class',
+    name='django-settings',
     version='0.1.0',
     packages=find_packages(),
     include_package_data=True,

@@ -1,5 +1,5 @@
 [project]
-name = "django-settings-class"
+name = "django-settings"
 version = "0.1.0"
 description = "Add your description here"
 requires-python = ">=3.12"
