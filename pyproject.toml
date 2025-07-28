@@ -1,6 +1,6 @@
 [project]
 name = "django-settings"
-version = "0.1.0"
+version = "0.2.9"
 description = "Add your description here"
 requires-python = ">=3.10"
 dependencies = [

@@ -14,19 +14,20 @@ pip install django-settings
 
 ```python
 # settings.py
-from django_settings import DjangoSettings
+from django_settings import DjangoSettings, DjangoDatabases, DatabaseConfig
+
+class DatabaseSettings(DjangoDatabases):
+    default = DatabaseConfig(
+        engine='django.db.backends.sqlite3',
+        name= 'db.sqlite3'
+    )
 
 # Create settings instance
 settings = DjangoSettings(
     debug=True,
     secret_key="your-secret-key-here",
     allowed_hosts=["localhost", "127.0.0.1"],
-    databases={
-        'default': {
-            'ENGINE': 'django.db.backends.sqlite3',
-            'NAME': 'db.sqlite3',
-        }
-    }
+    databases=DatabaseSettings()
 )
 
 # Register settings globally
@@ -74,22 +75,24 @@ settings.register()
 
 # settings/production.py
 from .base import BaseSettings
+from django_settings import DatabaseConfig, DjangoDatabases
 import os
+
+class ProductionDatabases(DjangoDatabases):
+    default = DatabaseConfig(
+        engine='django.db.backends.postgresql',
+        name=os.environ['DB_NAME'],
+        user=os.environ['DB_USER'],
+        password=os.environ['DB_PASSWORD'],
+        host=os.environ['DB_HOST'],
+        port=os.environ['DB_PORT']
+    )
 
 settings = BaseSettings()
 settings.debug = False
 settings.secret_key = os.environ['SECRET_KEY']
 settings.allowed_hosts = os.environ['ALLOWED_HOSTS'].split(',')
-settings.databases = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': os.environ['DB_NAME'],
-        'USER': os.environ['DB_USER'],
-        'PASSWORD': os.environ['DB_PASSWORD'],
-        'HOST': os.environ['DB_HOST'],
-        'PORT': os.environ['DB_PORT'],
-    }
-}
+settings.databases = ProductionDatabases()
 settings.register()
 ```
 
@@ -105,27 +108,56 @@ settings.register()
 
 ### Database Configuration
 
+#### Using DatabaseConfig and DjangoDatabases
+
 ```python
+from django_settings import DjangoSettings, DatabaseConfig, DjangoDatabases
+
+# Define individual database configurations
+class MyDatabases(DjangoDatabases):
+    default = DatabaseConfig(
+        engine='django.db.backends.postgresql',
+        name='myproject',
+        user='myuser',
+        password='mypassword',
+        host='localhost',
+        port='5432'
+    )
+    
+    users = DatabaseConfig(
+        engine='django.db.backends.mysql',
+        name='users_db',
+        user='mysql_user',
+        password='mysql_password',
+        host='mysql.example.com',
+        port='3306'
+    )
+
 settings = DjangoSettings(
-    databases={
-        'default': {
-            'ENGINE': 'django.db.backends.postgresql',
-            'NAME': 'myproject',
-            'USER': 'myuser',
-            'PASSWORD': 'mypassword',
-            'HOST': 'localhost',
-            'PORT': '5432',
-        },
-        'users': {
-            'ENGINE': 'django.db.backends.mysql',
-            'NAME': 'users_db',
-            'USER': 'mysql_user',
-            'PASSWORD': 'mysql_password',
-            'HOST': 'mysql.example.com',
-            'PORT': '3306',
-        }
-    }
+    databases=MyDatabases()
 )
+```
+
+#### Advanced Database Configuration
+
+```python
+# With additional options
+class ProductionDatabases(DjangoDatabases):
+    default = DatabaseConfig(
+        engine='django.db.backends.postgresql',
+        name='production_db',
+        user='prod_user',
+        password='secure_password',
+        host='db.example.com',
+        port='5432',
+        options={
+            'sslmode': 'require',
+            'connect_timeout': 10,
+        },
+        conn_max_age=600,
+        conn_health_checks=True,
+        atomic_requests=True
+    )
 ```
 
 ### Email Configuration
@@ -187,6 +219,35 @@ The main class that contains all Django settings as typed attributes.
 - `register()`: Registers settings as module-level variables
 - `to_dict`: Property that returns settings as a dictionary with uppercase keys
 
+### DatabaseConfig Class
+
+A dataclass for defining individual database configurations with type safety.
+
+#### Attributes
+
+- `engine`: Database backend engine
+- `name`: Database name
+- `user`: Database user
+- `password`: Database password
+- `host`: Database host
+- `port`: Database port
+- `options`: Additional database options
+- `atomic_requests`: Enable atomic requests
+- `conn_max_age`: Connection max age
+- `conn_health_checks`: Enable connection health checks
+
+### DjangoDatabases Class
+
+A collection class for managing multiple database configurations.
+
+#### Usage
+
+```python
+class MyDatabases(DjangoDatabases):
+    default = DatabaseConfig(engine='django.db.backends.sqlite3')
+    cache = DatabaseConfig(engine='django.db.backends.postgresql')
+```
+
 #### Accessing Settings
 
 ```python
@@ -197,7 +258,7 @@ print(settings.debug)  # True
 print(settings.DEBUG)  # True
 
 # Dictionary access
-settings_dict = settings.to_dict
+settings_dict = settings.as_dict
 print(settings_dict['DEBUG'])  # True
 ```
 
@@ -227,18 +288,19 @@ INSTALLED_APPS = [
 ### After (with django-settings)
 
 ```python
-from django_settings import DjangoSettings
+from django_settings import DjangoSettings, DatabaseConfig, DjangoDatabases
+
+class MyDatabases(DjangoDatabases):
+    default = DatabaseConfig(
+        engine='django.db.backends.sqlite3',
+        name='db.sqlite3'
+    )
 
 settings = DjangoSettings(
     debug=True,
     secret_key='your-secret-key',
     allowed_hosts=['localhost'],
-    databases={
-        'default': {
-            'ENGINE': 'django.db.backends.sqlite3',
-            'NAME': 'db.sqlite3',
-        }
-    }
+    databases=MyDatabases()
 )
 
 settings.register()

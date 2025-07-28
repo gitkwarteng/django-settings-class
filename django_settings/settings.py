@@ -1,11 +1,47 @@
 import inspect
-from dataclasses import dataclass
-from functools import cached_property
-from typing import List, Dict, Any, Optional, Tuple
+from dataclasses import dataclass, field
+from typing import List, Dict, Any, Optional, Tuple, Type
+
+from django_settings.base import BaseDjangoSettings, BaseSettingsCollection
 
 
 @dataclass
-class DjangoSettings:
+class DatabaseConfig(BaseDjangoSettings):
+    """
+    A complete settings class for representing a Django database configurations.
+    This should be used in conjunction with `DjangoDatabases` class to define database settings.
+    """
+    engine: str = ''
+    name: Any = ''
+    user: str = ''
+    password: str = ''
+    host: str = ''
+    port: str = ''
+    options: Dict[str, Any] = field(default_factory=dict)
+    atomic_requests: bool = False
+    autocommit: bool = True
+    conn_max_age: int = 0
+    conn_health_checks: bool = False
+    time_zone: str = None
+    disable_server_side_cursors: bool = False
+    test: Dict[str, Any] = field(default_factory=dict)
+
+
+@dataclass
+class DjangoDatabases(BaseSettingsCollection):
+    """
+    A class for declaring Django Database settings.
+    Each property maps to a key in the Django settings dick.
+
+    Inherit this class in your settings file and override the default property
+    to provide your default database settings.
+    """
+    default = DatabaseConfig(engine='django.db.backends.sqlite3', name='db.sqlite3')
+
+
+@dataclass
+class DjangoSettings(BaseDjangoSettings):
+    """Main Django settings class"""
     # CORE
     debug: bool = True
     debug_propagate_exceptions: bool = False
@@ -35,7 +71,7 @@ class DjangoSettings:
     server_email: str = "root@localhost"
 
     # Database
-    databases: Dict[str, Any] = None
+    databases: DjangoDatabases = None
     database_routers: List[str] = None
 
     # Email
@@ -207,59 +243,6 @@ class DjangoSettings:
 
     def __post_init__(self):
         # Initialize None fields with appropriate default values
-        if self.admins is None:
-            self.admins = []
-        if self.internal_ips is None:
-            self.internal_ips = []
-        if self.allowed_hosts is None:
-            self.allowed_hosts = []
-        if self.languages is None:
-            self.languages = [
-                ("af", "Afrikaans"), ("ar", "Arabic"), ("ar-dz", "Algerian Arabic"),
-                ("ast", "Asturian"), ("az", "Azerbaijani"), ("bg", "Bulgarian"),
-                ("be", "Belarusian"), ("bn", "Bengali"), ("br", "Breton"),
-                ("bs", "Bosnian"), ("ca", "Catalan"), ("ckb", "Central Kurdish (Sorani)"),
-                ("cs", "Czech"), ("cy", "Welsh"), ("da", "Danish"), ("de", "German"),
-                ("dsb", "Lower Sorbian"), ("el", "Greek"), ("en", "English"),
-                ("en-au", "Australian English"), ("en-gb", "British English"),
-                ("eo", "Esperanto"), ("es", "Spanish"), ("es-ar", "Argentinian Spanish"),
-                ("es-co", "Colombian Spanish"), ("es-mx", "Mexican Spanish"),
-                ("es-ni", "Nicaraguan Spanish"), ("es-ve", "Venezuelan Spanish"),
-                ("et", "Estonian"), ("eu", "Basque"), ("fa", "Persian"),
-                ("fi", "Finnish"), ("fr", "French"), ("fy", "Frisian"),
-                ("ga", "Irish"), ("gd", "Scottish Gaelic"), ("gl", "Galician"),
-                ("he", "Hebrew"), ("hi", "Hindi"), ("hr", "Croatian"),
-                ("hsb", "Upper Sorbian"), ("hu", "Hungarian"), ("hy", "Armenian"),
-                ("ia", "Interlingua"), ("id", "Indonesian"), ("ig", "Igbo"),
-                ("io", "Ido"), ("is", "Icelandic"), ("it", "Italian"),
-                ("ja", "Japanese"), ("ka", "Georgian"), ("kab", "Kabyle"),
-                ("kk", "Kazakh"), ("km", "Khmer"), ("kn", "Kannada"),
-                ("ko", "Korean"), ("ky", "Kyrgyz"), ("lb", "Luxembourgish"),
-                ("lt", "Lithuanian"), ("lv", "Latvian"), ("mk", "Macedonian"),
-                ("ml", "Malayalam"), ("mn", "Mongolian"), ("mr", "Marathi"),
-                ("ms", "Malay"), ("my", "Burmese"), ("nb", "Norwegian Bokmål"),
-                ("ne", "Nepali"), ("nl", "Dutch"), ("nn", "Norwegian Nynorsk"),
-                ("os", "Ossetic"), ("pa", "Punjabi"), ("pl", "Polish"),
-                ("pt", "Portuguese"), ("pt-br", "Brazilian Portuguese"),
-                ("ro", "Romanian"), ("ru", "Russian"), ("sk", "Slovak"),
-                ("sl", "Slovenian"), ("sq", "Albanian"), ("sr", "Serbian"),
-                ("sr-latn", "Serbian Latin"), ("sv", "Swedish"), ("sw", "Swahili"),
-                ("ta", "Tamil"), ("te", "Telugu"), ("tg", "Tajik"), ("th", "Thai"),
-                ("tk", "Turkmen"), ("tr", "Turkish"), ("tt", "Tatar"),
-                ("udm", "Udmurt"), ("ug", "Uyghur"), ("uk", "Ukrainian"),
-                ("ur", "Urdu"), ("uz", "Uzbek"), ("vi", "Vietnamese"),
-                ("zh-hans", "Simplified Chinese"), ("zh-hant", "Traditional Chinese")
-            ]
-        if self.languages_bidi is None:
-            self.languages_bidi = ["he", "ar", "ar-dz", "ckb", "fa", "ug", "ur"]
-        if self.locale_paths is None:
-            self.locale_paths = []
-        if self.managers is None:
-            self.managers = self.admins
-        if self.databases is None:
-            self.databases = {}
-        if self.database_routers is None:
-            self.database_routers = []
         if self.installed_apps is None:
             self.installed_apps = [
                 'django.contrib.admin',
@@ -297,24 +280,6 @@ class DjangoSettings:
                 "default": {"BACKEND": "django.core.files.storage.FileSystemStorage"},
                 "staticfiles": {"BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage"}
             }
-        if self.file_upload_handlers is None:
-            self.file_upload_handlers = [
-                "django.core.files.uploadhandler.MemoryFileUploadHandler",
-                "django.core.files.uploadhandler.TemporaryFileUploadHandler"
-            ]
-        if self.date_input_formats is None:
-            self.date_input_formats = [
-                "%Y-%m-%d", "%m/%d/%Y", "%m/%d/%y", "%b %d %Y", "%b %d, %Y",
-                "%d %b %Y", "%d %b, %Y", "%B %d %Y", "%B %d, %Y", "%d %B %Y", "%d %B, %Y"
-            ]
-        if self.time_input_formats is None:
-            self.time_input_formats = ["%H:%M:%S", "%H:%M:%S.%f", "%H:%M"]
-        if self.datetime_input_formats is None:
-            self.datetime_input_formats = [
-                "%Y-%m-%d %H:%M:%S", "%Y-%m-%d %H:%M:%S.%f", "%Y-%m-%d %H:%M",
-                "%m/%d/%Y %H:%M:%S", "%m/%d/%Y %H:%M:%S.%f", "%m/%d/%Y %H:%M",
-                "%m/%d/%y %H:%M:%S", "%m/%d/%y %H:%M:%S.%f", "%m/%d/%y %H:%M"
-            ]
         if self.middleware is None:
             self.middleware = [
                 'django.middleware.security.SecurityMiddleware',
@@ -344,28 +309,11 @@ class DjangoSettings:
                 {'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator'},
                 {'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator'},
             ]
-
-        if self.csrf_trusted_origins is None:
-            self.csrf_trusted_origins = []
-        if self.logging is None:
-            self.logging = {}
-        if self.test_non_serialized_apps is None:
-            self.test_non_serialized_apps = []
-        if self.fixture_dirs is None:
-            self.fixture_dirs = []
-        if self.staticfiles_dirs is None:
-            self.staticfiles_dirs = []
         if self.staticfiles_finders is None:
             self.staticfiles_finders = [
                 "django.contrib.staticfiles.finders.FileSystemFinder",
                 "django.contrib.staticfiles.finders.AppDirectoriesFinder"
             ]
-        if self.migration_modules is None:
-            self.migration_modules = {}
-        if self.silenced_system_checks is None:
-            self.silenced_system_checks = []
-        if self.secure_redirect_exempt is None:
-            self.secure_redirect_exempt = []
 
     def __dir__(self):
         """Return Django-style uppercase attribute names for dir() calls."""
@@ -383,15 +331,10 @@ class DjangoSettings:
 
     def __getattr__(self, name):
         """Allow access to Django settings using uppercase names."""
-        django_dict = self.to_dict
+        django_dict = self.as_dict
         if name in django_dict:
             return django_dict[name]
         raise AttributeError(f"'{self.__class__.__name__}' object has no attribute '{name}'")
-
-    @cached_property
-    def to_dict(self) -> Dict[str, Any]:
-        """Return a dictionary with original Django setting names (capitalized) and their values."""
-        return {field.upper(): getattr(self, field) for field in self.__dataclass_fields__}
 
     def register(self):
         """
@@ -401,6 +344,6 @@ class DjangoSettings:
         module = inspect.getmodule(caller_frame)
 
         # Inject validated fields as module-level variables
-        for field_name, field_value in self.to_dict.items():
+        for field_name, field_value in self.as_dict.items():
             setattr(module, field_name, field_value)
 
