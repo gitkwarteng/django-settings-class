@@ -103,6 +103,7 @@ settings.register()
 - **Default Values**: Sensible defaults for all Django settings
 - **Validation**: Dataclass validation ensures correct types
 - **Backwards Compatible**: Works with existing Django projects
+- **Custom settings**: Support custom/extra Django settings
 
 ## Configuration Examples
 
@@ -206,6 +207,29 @@ settings = DjangoSettings(
     csrf_cookie_secure=True,
     x_frame_options='DENY'
 )
+```
+
+
+### Extra Settings
+
+```python
+from django_settings import DjangoSettings, ExtraSettings
+
+class CustomSettings(ExtraSettings):
+    ipinfo_token = 'XXXXXXXXXX'
+
+
+# Create settings instance
+settings = DjangoSettings(
+    debug=True,
+    secret_key="your-secret-key-here",
+    allowed_hosts=["localhost", "127.0.0.1"],
+    ...,
+    extra=CustomSettings()
+)
+
+# Register settings globally
+settings.register()
 ```
 
 ## API Reference

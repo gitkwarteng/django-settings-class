@@ -2,7 +2,7 @@ import inspect
 from dataclasses import dataclass, field
 from typing import List, Dict, Any, Optional, Tuple, Type
 
-from django_settings.base import BaseDjangoSettings, BaseSettingsCollection
+from django_settings.base import BaseDjangoSettings, BaseSettingsCollection, BaseExtraSettings
 
 
 @dataclass
@@ -31,12 +31,27 @@ class DatabaseConfig(BaseDjangoSettings):
 class DjangoDatabases(BaseSettingsCollection):
     """
     A class for declaring Django Database settings.
-    Each property maps to a key in the Django settings dick.
+    Each property maps to a key in the Django settings dictionary.
 
     Inherit this class in your settings file and override the default property
     to provide your default database settings.
     """
     default = DatabaseConfig(engine='django.db.backends.sqlite3', name='db.sqlite3')
+
+
+
+@dataclass
+class ExtraSettings(BaseExtraSettings):
+    """
+    A class for declaring extra settings that you want to add to your Django settings.
+
+    Inherit this class and add as many settings as you like as properties.
+
+    >>> class MyCustomSettings(ExtraSettings):
+    >>>     aws_access_key_id: str = 'xxxxxxxxx'
+    >>>     aws_secret_access_key: str = 'xxxxxxxx'
+    """
+    pass
 
 
 @dataclass
@@ -240,6 +255,9 @@ class DjangoSettings(BaseDjangoSettings):
     secure_referrer_policy: str = "same-origin"
     secure_ssl_host: Optional[str] = None
     secure_ssl_redirect: bool = False
+
+    # Extra settings
+    extra: ExtraSettings = None
 
     def __post_init__(self):
         # Initialize None fields with appropriate default values
