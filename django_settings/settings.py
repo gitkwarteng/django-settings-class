@@ -107,6 +107,7 @@ class DjangoSettings(BaseDjangoSettings):
     # Apps and Templates
     installed_apps: List[str] = None
     templates: List[Dict[str, Any]] = None
+    template_dirs: List[Any] = None
     form_renderer: str = "django.forms.renderers.DjangoTemplates"
     forms_urlfield_assume_https: bool = False
 
@@ -256,6 +257,8 @@ class DjangoSettings(BaseDjangoSettings):
     secure_ssl_host: Optional[str] = None
     secure_ssl_redirect: bool = False
 
+    root_urlconf:str = ''
+
     # Extra settings
     extra: ExtraSettings = None
 
@@ -274,7 +277,7 @@ class DjangoSettings(BaseDjangoSettings):
             self.templates = [
                 {
                     'BACKEND': 'django.template.backends.django.DjangoTemplates',
-                    'DIRS': [],
+                    'DIRS': self.template_dirs or [],
                     'APP_DIRS': True,
                     'OPTIONS': {
                         'context_processors': [
