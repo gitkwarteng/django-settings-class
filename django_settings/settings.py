@@ -127,7 +127,7 @@ class DjangoSettings(BaseDjangoSettings):
     storages: Dict[str, Dict[str, str]] = None
     media_root: str = ""
     media_url: str = ""
-    static_root: Optional[str] = None
+    static_root: Optional[Any] = None
     static_url: Optional[str] = 'static/'
 
     # File Uploads
