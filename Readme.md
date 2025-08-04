@@ -14,7 +14,10 @@ pip install django-settings
 
 ```python
 # settings.py
+from pathlib import Path
 from django_settings import DjangoSettings, DjangoDatabases, DatabaseConfig
+
+BASE_DIR = Path(__file__).resolve().parent.parent
 
 class DatabaseSettings(DjangoDatabases):
     default = DatabaseConfig(
@@ -24,6 +27,7 @@ class DatabaseSettings(DjangoDatabases):
 
 # Create settings instance
 settings = DjangoSettings(
+    template_dirs = [BASE_DIR / 'templates'], # Pass template_dirs if you want to load templates from other places outside app directories.
     debug=True,
     secret_key="your-secret-key-here",
     allowed_hosts=["localhost", "127.0.0.1"],

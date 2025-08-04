@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='django-settings',
-    version='0.2.15',
+    version='0.2.16',
     packages=find_packages(include=["django_settings", "django_settings.*"]),
     include_package_data=True,
     install_requires=[

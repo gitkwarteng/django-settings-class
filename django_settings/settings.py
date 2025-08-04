@@ -125,10 +125,10 @@ class DjangoSettings(BaseDjangoSettings):
 
     # Storage
     storages: Dict[str, Dict[str, str]] = None
-    media_root: str = ""
-    media_url: str = ""
+    media_root: Optional[Any] = ""
+    media_url: str = "/media/"
     static_root: Optional[Any] = None
-    static_url: Optional[str] = 'static/'
+    static_url: Optional[str] = '/static/'
 
     # File Uploads
     file_upload_handlers: List[str] = None
@@ -367,4 +367,3 @@ class DjangoSettings(BaseDjangoSettings):
         # Inject validated fields as module-level variables
         for field_name, field_value in self.as_dict.items():
             setattr(module, field_name, field_value)
-

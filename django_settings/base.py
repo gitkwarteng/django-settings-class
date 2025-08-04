@@ -38,8 +38,9 @@ class BaseDjangoSettings:
     def as_dict(self) -> Dict[str, Any]:
         """Return a dictionary with original Django setting names (capitalized) and their values."""
         attr_dict = {}
-        for field in self.__dataclass_fields__:
-            value = getattr(self, field)
+        # for field in self.__dataclass_fields__:
+        # User build in __dict__ to capture dynamically added fields
+        for field, value in self.__dict__.items():
             if not value:
                 # Skip empty values
                 continue
